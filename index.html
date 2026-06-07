@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>developmentX 1.0 - Tactical Edge Command Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
+        body { font-family: 'Rajdhani', sans-serif; background-color: #030712; }
+        .tech-font { font-family: 'Orbitron', sans-serif; }
+        .mono-font { font-family: 'Share Tech Mono', monospace; }
+        .lcd-glass {
+            font-family: 'Share Tech Mono', monospace;
+            background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+            color: #4ade80;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 15px rgba(74,222,128,0.2);
+        }
+        .cyber-panel {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #eff6ff;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .scanline::after {
+            content: ''; position: absolute; width: 100%; height: 4px; background: rgba(34, 197, 94, 0.3);
+            animation: scanline 4s linear infinite; top: 0; left: 0; pointer-events: none;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between p-3 md:p-6">
+
+    <header class="cyber-panel p-4 rounded-2xl border-blue-900/40 mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="bg-blue-600 text-white font-black text-xs px-2 py-0.5 rounded tracking-widest tech-font animate-pulse">V1.0 LIVE</span>
+                <h1 class="text-3xl font-black tracking-wider text-blue-400 tech-font">developmentX 1.0</h1>
+            </div>
+            <p class="text-xs text-slate-400 tracking-wider font-medium uppercase mt-0.5">Intelligent Multi-Slide Edge Mesh Platform</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-3 text-right">Hardware<br>LCD Mirror</div>
+                <div class="lcd-glass px-4 py-1.5 rounded-lg text-xs font-bold tracking-wider border border-green-700/40">
+                    <div id="lcd-l1">SYS: OK - SLIDE 01</div>
+                    <div id="lcd-l2">BATT:94% | MESH:OK</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950/60 p-2 px-4 rounded-xl border border-slate-800 flex items-center gap-4">
+                <div class="relative flex items-center justify-center">
+                    <svg class="w-10 h-6 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <rect x="2" y="5" width="16" height="14" rx="2" fill="rgba(34,197,94,0.1)"></rect>
+                        <path stroke-linecap="round" d="M20 9v6"></path>
+                    </svg>
+                    <span id="headerBatteryText" class="absolute font-mono text-[10px] font-bold text-green-400">94%</span>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Node Power System</div>
+                    <div class="text-xs font-semibold text-slate-300 mono-font"><span id="headerVoltage">4.12</span>V | <span id="headerCurrent">-142</span>mA</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></span>
+                <span class="text-xs font-bold tracking-wider uppercase text-slate-400">Mesh Status: <strong class="text-emerald-400">SECURE</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <nav class="flex flex-wrap gap-2 mb-6 border-b border-slate-800 pb-3">
+        <button onclick="switchSlide('slide-overview')" id="btn-slide-overview" class="tab-btn active border border-slate-800 px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider tech-font cursor-pointer transition-all duration-200">
+            🎛️ Slide 01: Global Command
+        </button>
+        <button onclick="switchSlide('slide-ai-vision')" id="btn-slide-ai-vision" class="tab-btn border border-slate-800 px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider tech-font cursor-pointer transition-all duration-200">
+            📷 Slide 02: AI Vision Matrix
+        </button>
+        <button onclick="switchSlide('slide-sensors')" id="btn-slide-sensors" class="tab-btn border border-slate-800 px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider tech-font cursor-pointer transition-all duration-200">
+            📊 Slide 03: Deep Sensor Telemetry
+        </button>
+        <button onclick="switchSlide('slide-power')" id="btn-slide-power" class="tab-btn border border-slate-800 px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider tech-font cursor-pointer transition-all duration-200">
+            🔋 Slide 04: Lithium Smart Analytics
+        </button>
+    </nav>
+
+    <div id="criticalSmsAlert" class="hidden bg-gradient-to-r from-red-950/90 to-slate-950 border border-red-600 text-slate-100 p-4 rounded-2xl mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xl">
+        <div class="flex items-center gap-4">
+            <div class="bg-red-600 text-white px-3 py-1.5 rounded-lg font-black text-sm tech-font shadow-lg tracking-widest animate-pulse">CRITICAL DISASTER BREACH</div>
+            <div>
+                <h4 class="font-bold text-base text-red-400">[SIM800L MODULE] AT+CMGS Command Execution Matrix Triggered</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Emergency SMS broad-network data packet transmitted to wildlife & forestry high-command centers.</p>
+            </div>
+        </div>
+        <div class="text-xs font-mono bg-red-900/30 border border-red-700/40 text-red-300 px-3 py-1.5 rounded-lg">
+            Status: SMS DELIVERED OK
+        </div>
+    </div>
+
+    <main class="flex-1">
+        
+        <section id="slide-overview" class="slide-view grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 cyber-panel rounded-2xl p-4 flex flex-col justify-between min-h-[350px]">
+                <div>
+                    <span class="text-[10px] bg-blue-950 border border-blue-800 text-blue-400 px-2 py-0.5 rounded font-bold uppercase tech-font">Live Camera Widget</span>
+                    <h3 class="text-base font-bold text-slate-300 mt-2 tracking-wide uppercase">ESP32-CAM Node Feed</h3>
+                </div>
+                <div class="bg-black aspect-video rounded-xl relative border border-slate-900 overflow-hidden flex items-center justify-center my-4">
+                    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:12px_12px]"></div>
+                    <div id="miniFeedStatus" class="text-center font-mono text-xs text-slate-500 tracking-widest animate-pulse">CONNECTING OVER MQTT GATEWAY...</div>
+                    <div id="miniBox" class="hidden absolute border-2 border-red-500 bg-red-500/10 rounded w-1/2 h-1/2"></div>
+                </div>
+                <div class="text-xs text-slate-400 border-t border-slate-800/60 pt-3 flex justify-between">
+                    <span>Hardware Framework:</span>
+                    <span class="text-blue-400 font-bold font-mono">Arduino Master + ESP32 Web Gateway</span>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="cyber-panel rounded-2xl p-5 flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Gas Concentration Index</span>
+                            <p class="text-[10px] text-slate-500">Real-Time Core Sampling (PPM)</p>
+                        </div>
+                        <span id="gasBadge" class="bg-emerald-950 border border-emerald-800 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Normal</span>
+                    </div>
+                    <div class="my-6">
+                        <div class="text-5xl font-black tech-font text-slate-100 tracking-tight"><span id="ovGas">308</span> <span class="text-lg text-slate-500 font-sans font-normal">PPM</span></div>
+                    </div>
+                    <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden">
+                        <div id="ovGasProgress" class="bg-emerald-500 h-full transition-all duration-300" style="width: 30%"></div>
+                    </div>
+                </div>
+
+                <div class="cyber-panel rounded-2xl p-5 flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Macro Ambient Sensors</span>
+                        <p class="text-[10px] text-slate-500">Dual Suraounding Metrics Network</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 my-auto">
+                        <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
+                            <span class="text-[10px] text-slate-500 font-bold uppercase block tracking-wider">Temperature</span>
+                            <span class="text-2xl font-black tech-font text-slate-200"><span id="ovTemp">28.4</span>°C</span>
+                        </div>
+                        <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">
+                            <span class="text-[10px] text-slate-500 font-bold uppercase block tracking-wider">Air Humidity</span>
+                            <span class="text-2xl font-black tech-font text-slate-200"><span id="ovHum">63</span>%</span>
+                        </div>
+                    </div>
+                    <div id="ovFlameWidget" class="bg-slate-950 border border-slate-800/80 rounded-xl px-4 py-2 flex justify-between items-center text-xs">
+                        <span class="text-slate-400">Flame Array State:</span>
+                        <span id="ovFlameText" class="font-bold text-emerald-400">CLEAR</span>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 cyber-panel rounded-2xl p-4">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest tech-font mb-3">Ultrasonic Security Perimeter Array Status</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800" id="trZone1"><span class="text-[10px] block text-slate-500 uppercase font-bold">Zone 1 (North)</span><span class="text-xs font-bold text-emerald-400 mono-font">SECURE</span></div>
+                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800" id="trZone2"><span class="text-[10px] block text-slate-500 uppercase font-bold">Zone 2 (East)</span><span class="text-xs font-bold text-emerald-400 mono-font">SECURE</span></div>
+                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800" id="trZone3"><span class="text-[10px] block text-slate-500 uppercase font-bold">Zone 3 (South)</span><span class="text-xs font-bold text-emerald-400 mono-font">SECURE</span></div>
+                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800" id="trZone4"><span class="text-[10px] block text-slate-500 uppercase font-bold">Zone 4 (West)</span><span class="text-xs font-bold text-emerald-400 mono-font">SECURE</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-ai-vision" class="slide-view hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 cyber-panel rounded-2xl p-5 flex flex-col justify-between scanline relative overflow-hidden">
+                <div class="flex justify-between items-center mb-3 z-10">
+                    <h3 class="text-sm font-black text-slate-300 tech-font uppercase tracking-widest">📷 Tactical Stream Matrix Viewport</h3>
+                    <span id="visionMatrixBadge" class="bg-blue-950 border border-blue-800 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded">YOLOv8 MODEL DEPLOYED</span>
+                </div>
+                
+                <div class="bg-black aspect-video rounded-2xl border border-slate-900 relative overflow-hidden flex items-center justify-center">
+                    <div class="absolute inset-0 opacity-15 bg-[linear-gradient(rgba(18,24,38,0)_95%,rgba(34,197,94,0.15)_95%)] [background-size:100%_24px]"></div>
+                    <div id="fullFeedStatus" class="text-center font-mono text-sm tracking-widest text-slate-500 animate-pulse">PROCESSING LIVE STREAM MATRIX NODE...</div>
+
+                    <div id="fullAiBox" class="hidden absolute border-2 border-red-500 bg-red-500/10 rounded-lg shadow-2xl transition-all duration-300" style="left:25%; top:20%; width:40%; height:55%;">
+                        <div class="absolute -top-7 left-0 bg-red-600 text-white font-black text-[10px] tracking-widest px-2.5 py-1 rounded-t tech-font uppercase">
+                            DETECTED: <span id="fullBoxLabel">WILDLIFE (ELEPHANT)</span> | CONF: <span id="fullBoxConf">94%</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-500 font-mono mt-3">Node Source Identification: Edge Hardware ESP32-CAM DevModule // Resolution 640x480 MJPEG Engine</p>
+            </div>
+
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                <div class="cyber-panel rounded-2xl p-4 flex-1">
+                    <h3 class="text-xs font-bold tracking-widest text-slate-400 uppercase tech-font border-b border-slate-800 pb-2 mb-4">AI Target Classification Models</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-mono mb-1"><span>Smoke/Early Fire Signatures</span><span class="text-blue-400 font-bold">98.2% Accuracy</span></div>
+                            <div class="w-full bg-slate-950 rounded-full h-1.5"><div class="bg-blue-500 h-full rounded-full" style="width: 98.2%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-mono mb-1"><span>Human-Wildlife Conflict Targets</span><span class="text-emerald-400 font-bold">94.7% Accuracy</span></div>
+                            <div class="w-full bg-slate-950 rounded-full h-1.5"><div class="bg-emerald-400 h-full rounded-full" style="width: 94.7%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-mono mb-1"><span>False Alarm Filtration Engine</span><span class="text-amber-400 font-bold">91.1% Efficiency</span></div>
+                            <div class="w-full bg-slate-950 rounded-full h-1.5"><div class="bg-amber-500 h-full rounded-full" style="width: 91.1%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-sensors" class="slide-view hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 cyber-panel rounded-2xl p-5 flex flex-col h-[400px]">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold tracking-wider text-slate-300 tech-font uppercase">📈 High-Performance Micro-Telemetry Analytics</h3>
+                    <span class="text-[10px] text-slate-500 font-mono">Sampling Window Rate: 2500ms</span>
+                </div>
+                <div class="flex-1 relative">
+                    <canvas id="deepTelemetryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4 grid grid-cols-1 gap-4">
+                <div class="cyber-panel rounded-2xl p-4 bg-gradient-to-br from-slate-900/60 to-slate-950/80">
+                    <span class="text-[10px] text-blue-400 font-black tracking-widest uppercase block mb-1">MQ Sensor Calibration Data</span>
+                    <div class="flex items-baseline gap-2">
+                        <span id="deepGasText" class="text-4xl font-black tech-font text-slate-100">308</span>
+                        <span class="text-xs text-slate-500 uppercase font-bold font-mono">PPM Baseline</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2">Sensors calibrated against standardized chemical atmospheric composition matrix limits.</p>
+                </div>
+
+                <div class="cyber-panel rounded-2xl p-4 bg-gradient-to-br from-slate-900/60 to-slate-950/80">
+                    <span class="text-[10px] text-orange-400 font-black tracking-widest uppercase block mb-1">DHT Atmospheric Array</span>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <div>
+                            <span class="text-[9px] text-slate-500 block uppercase font-bold">Ambient Temp</span>
+                            <span id="deepTempText" class="text-2xl font-bold tech-font text-slate-200">28.4°C</span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] text-slate-500 block uppercase font-bold">Relative Hum</span>
+                            <span id="deepHumText" class="text-2xl font-bold tech-font text-slate-200">63%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-power" class="slide-view hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 cyber-panel rounded-2xl p-5 flex flex-col justify-between text-center">
+                <div>
+                    <span class="text-[10px] bg-emerald-950 border border-emerald-800 text-emerald-400 px-2 py-0.5 rounded font-black tech-font uppercase">Battery Fuel Gauge</span>
+                    <h3 class="text-lg font-bold text-slate-300 mt-2 uppercase tracking-wider">State of Charge (SoC)</h3>
+                </div>
+                <div class="my-6 relative flex flex-col items-center justify-center">
+                    <div class="text-6xl font-black tech-font text-emerald-400 tracking-tight" id="pwrPercent">94%</div>
+                    <span class="text-xs text-slate-500 uppercase tracking-widest font-bold mt-1">Li-ion 18650 Cell Array</span>
+                </div>
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 text-xs text-slate-400 flex justify-between">
+                    <span>Operational Health Status:</span>
+                    <strong class="text-emerald-400">98% (EXCELLENT)</strong>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="cyber-panel rounded-2xl p-5 space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 tech-font border-b border-slate-800 pb-2">Bus Electrical Vector Metrics</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-500 block uppercase font-bold">Cell Voltage</span>
+                            <div class="text-xl font-bold tech-font text-slate-200 mt-0.5"><span id="pwrVoltage">4.12</span> V</div>
+                        </div>
+                        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                            <span class="text-[10px] text-slate-500 block uppercase font-bold">Current Draw</span>
+                            <div class="text-xl font-bold tech-font text-slate-200 mt-0.5"><span id="pwrCurrent">-142</span> mA</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800 text-xs flex justify-between items-center">
+                        <span class="text-slate-400">Calculated Node Power Dissipation:</span>
+                        <span class="mono-font font-bold text-blue-400" id="pwrWattage">585 mW</span>
+                    </div>
+                </div>
+
+                <div class="cyber-panel rounded-2xl p-5 flex flex-col justify-between">
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 tech-font border-b border-slate-800 pb-2">Edge Node Operational Lifecycle</h4>
+                    <div class="my-auto space-y-2">
+                        <div class="flex justify-between text-xs font-mono">
+                            <span class="text-slate-400">Estimated Autonomy Time-to-Empty:</span>
+                            <span class="text-slate-200 font-bold" id="pwrTimeEmpty">38 Hrs 14 Min</span>
+                        </div>
+                        <div class="flex justify-between text-xs font-mono">
+                            <span class="text-slate-400">Edge Gateway Sleep-Cycle Efficiency:</span>
+                            <span class="text-emerald-400 font-bold">92.4% Optimal</span>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 leading-normal">Smart hardware deep-sleep loops auto-scale clock frequencies when sensors identify strict baseline data variables.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="mt-6">
+        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 font-mono text-xs shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
+                <span class="text-blue-500 font-black uppercase tracking-wider text-[11px] flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span> Global Multi-Slide Action Telemetry Terminal
+                </span>
+                <span class="text-slate-600 font-bold">Hardware Bridge Level: 115200 Baud</span>
+            </div>
+            <div id="masterTerminalLogs" class="h-28 overflow-y-auto space-y-1 text-slate-400 text-[11px] scrollbar-thin scrollbar-thumb-slate-800">
+                <p class="text-slate-600">[00:00:01] Pre-initialization checks passed. System architecture mapped securely.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tab Control System Switcher Logic
+        function switchSlide(targetSlideId) {
+            // Hide all viewports
+            document.querySelectorAll('.slide-view').forEach(view => view.classList.add('hidden'));
+            // Remove active style matrices from tab switches
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Unmask selected layout slice
+            document.getElementById(targetSlideId).classList.remove('hidden');
+            // Pin highlight onto current navigation target button
+            document.getElementById(`btn-${targetSlideId}`).classList.add('active');
+
+            // Quick update mirror hardware display lines matching current view slice selection 
+            const formattedLabel = targetSlideId.replace('slide-', '').toUpperCase();
+            document.getElementById('lcd-l1').innerText = `SYS: ACTIVE OK`;
+            document.getElementById('lcd-l2').innerText = `VIEW: ${formattedLabel}`;
+
+            addGlobalLog(`UINavigation execution: Active dashboard viewport redirected to [${formattedLabel}] Module framework.`, "text-slate-500");
+        }
+
+        // Setup ChartJS Dynamic Canvas Rendering Array
+        const deepCtx = document.getElementById('deepTelemetryChart').getContext('2d');
+        const bufferLength = 15;
+        const timelineLabels = Array(bufferLength).fill('');
+        const gasBuffer = Array(bufferLength).fill(300);
+        const tempBuffer = Array(bufferLength).fill(28.5);
+
+        const deepTelemetryChart = new Chart(deepCtx, {
+            type: 'line',
+            data: {
+                labels: timelineLabels,
+                datasets: [
+                    {
+                        label: 'Combustible Gas (PPM)',
+                        data: gasBuffer,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderWidth: 2.5,
+                        tension: 0.25,
+                        yAxisID: 'yGasAxis'
+                    },
+                    {
+                        label: 'Ambient Heat Index (°C)',
+                        data: tempBuffer,
+                        borderColor: '#f97316',
+                        borderWidth: 1.5,
+                        borderDash: [5, 5],
+                        tension: 0.25,
+                        yAxisID: 'yTempAxis'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
+                scales: {
+                    x: { grid: { color: 'rgba(51, 65, 85, 0.15)' } },
+                    yGasAxis: { type: 'linear', position: 'left', min: 0, max: 1000, ticks: { color: '#3b82f6' }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
+                    yTempAxis: { type: 'linear', position: 'right', min: 10, max: 60, ticks: { color: '#f97316' }, grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+
+        // Universal Append Logger Execution Loop
+        function addGlobalLog(logMsg, colorCodeClass = "text-slate-400") {
+            const container = document.getElementById('masterTerminalLogs');
+            const stamp = new Date().toLocaleTimeString();
+            const wrapper = document.createElement('p');
+            wrapper.className = colorCodeClass;
+            wrapper.innerHTML = `<span class="text-slate-600 font-bold">[${stamp}]</span> ${logMsg}`;
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Global Loop Variable Control Matrices
+        let runtimeTicks = 0;
+
+        // Core Edge Hardware Scenario Intelligence Loops Matrix Engine 
+        setInterval(() => {
+            runtimeTicks++;
+
+            // Normal Data Variance Generations 
+            let liveGasValue = Math.floor(295 + Math.random() * 25);
+            let liveTempValue = parseFloat((28.2 + Math.random() * 1.2).toFixed(1));
+            let liveHumidityValue = Math.floor(61 + Math.random() * 3);
+
+            // Battery Property Fluctuations Based on Node Discharges
+            let liveBatteryPercent = 94;
+            let liveVoltage = parseFloat((4.14 - (runtimeTicks * 0.002)).toFixed(2));
+            let liveCurrent = Math.floor(-145 + Math.random() * 12);
+
+            // Clear Dynamic Alert Element Visibility Parameters By Default
+            document.getElementById('criticalSmsAlert').classList.add('hidden');
+            document.getElementById('miniBox').classList.add('hidden');
+            document.getElementById('fullAiBox').classList.add('hidden');
+            document.getElementById('miniFeedStatus').innerText = "ESP32-CAM: STREAM ACTIVE // CLEAR";
+            document.getElementById('miniFeedStatus').className = "text-center font-mono text-xs text-emerald-500 tracking-wider animate-pulse";
+            document.getElementById('fullFeedStatus').innerText = "LIVE EDGE FRAME ANALYSIS BUFFER SYNCED // NO ANOMALIES MATCHED";
+            document.getElementById('fullFeedStatus').className = "text-center font-mono text-xs text-emerald-500 tracking-wider";
+            document.getElementById('gasBadge').className = "bg-emerald-950 border border-emerald-800 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase";
+            document.getElementById('gasBadge').innerText = "Normal";
+
+            // Clean Ultrasonic Grid States
+            for(let k=1; k<=4; k++){
+                document.getElementById(`trZone${k}`).className = "bg-slate-950/60 p-2.5 rounded-xl border border-slate-800 text-center";
+                document.getElementById(`trZone${k}`).querySelector('span:nth-child(2)').className = "text-xs font-bold text-emerald-400 mono-font";
+                document.getElementById(`trZone${k}`).querySelector('span:nth-child(2)').innerText = "SECURE";
+            }
+
+            // Clean Flame UI widgets
+            document.getElementById('ovFlameText').className = "font-bold text-emerald-400";
+            document.getElementById('ovFlameText').innerText = "CLEAR";
+            document.getElementById('ovFlameWidget').className = "bg-slate-950 border border-slate-800/80 rounded-xl px-4 py-2 flex justify-between items-center text-xs";
+
+
+            // HACKATHON SCENARIO MATRIX 01: ELEPHANT APPROACH BREACH (Ticks 4 to 8)
+            if (runtimeTicks >= 4 && runtimeTicks <= 8) {
+                // Tripwire zone 3 registers a direct physical proximity breach violation
+                const zone3El = document.getElementById('trZone3');
+                zone3El.className = "bg-amber-950/40 p-2.5 rounded-xl border border-amber-600/80 text-center animate-pulse";
+                zone3El.querySelector('span:nth-child(2)').className = "text-xs font-bold text-amber-400 mono-font";
+                zone3El.querySelector('span:nth-child(2)').innerText = "BREACH ALERT";
+
+                // AI bounding framework overlays flash live visibility arrays
+                document.getElementById('miniBox').classList.remove('hidden');
+                document.getElementById('fullAiBox').classList.remove('hidden');
+                document.getElementById('fullBoxLabel').innerText = "WILDLIFE (ELEPHANT)";
+                document.getElementById('fullBoxConf').innerText = "95.4%";
+
+                document.getElementById('miniFeedStatus').innerText = "TARGET MATCH: WILDLIFE ENCOUNTER WARNING";
+                document.getElementById('miniFeedStatus').className = "text-center font-mono text-xs text-amber-400 tracking-wider font-bold";
+                document.getElementById('fullFeedStatus').innerText = "WARNING: EDGE INFERENCE MODULE IS TRACKING LARGE PROXIMITY ANIMAL SIGNATURES";
+                document.getElementById('fullFeedStatus').className = "text-center font-mono text-xs text-amber-400 font-bold";
+
+                if (runtimeTicks === 4) {
+                    addGlobalLog("Ultrasonic Sensor Module Node 03 triggered. Distance parameters dropped below 150cm.", "text-amber-400 font-semibold");
+                    addGlobalLog("ESP32-CAM frame extraction loop piped to YOLOv8 edge classification pipeline...", "text-blue-400");
+                }
+            }
+
+            // HACKATHON SCENARIO MATRIX 02: EXTREME TOXIC SPIKE & FLAME DISASTER EVENT (Ticks 11 to 15)
+            if (runtimeTicks >= 11 && runtimeTicks <= 15) {
+                liveGasValue = Math.floor(760 + Math.random() * 90); // Hazardous PPM Readouts
+                liveTempValue = parseFloat((51.6 + Math.random() * 3).toFixed(1)); // Critical thermal readings
+                liveCurrent = Math.floor(-380 + Math.random() * 25); // Heavy battery drainage due to local alarms & buzzer
+
+                document.getElementById('gasBadge').className = "bg-red-950 border border-red-800 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase animate-ping";
+                document.getElementById('gasBadge').innerText = "CRITICAL DISASTER DETECTED";
+
+                // Throw Flame sensor UI blocks to fire state parameters
+                document.getElementById('ovFlameText').className = "font-bold text-red-500 animate-pulse";
+                document.getElementById('ovFlameText').innerText = "⚠️ DETECTED!";
+                document.getElementById('ovFlameWidget').className = "bg-red-950/40 border border-red-800/80 rounded-xl px-4 py-2 flex justify-between items-center text-xs";
+
+                // Trigger AI bounding overlays to mark Fire/Smoke hazards
+                document.getElementById('miniBox').classList.remove('hidden');
+                document.getElementById('fullAiBox').classList.remove('hidden');
+                document.getElementById('fullBoxLabel').innerText = "HAZARD (SMOKE/FIRE SIGNATURE)";
+                document.getElementById('fullBoxConf').innerText = "99.1%";
+
+                document.getElementById('miniFeedStatus').innerText = "CRITICAL EVENT: FIRE FLASH DETECTED";
+                document.getElementById('miniFeedStatus').className = "text-center font-mono text-xs text-red-500 tracking-wider font-black";
+                document.getElementById('fullFeedStatus').innerText = "CRITICAL OUTBREAK: DENSE ACCELERATING SMOKE INFRARED FRAME SIGNATURE LOCALIZED";
+                document.getElementById('fullFeedStatus').className = "text-center font-mono text-xs text-red-500 font-black";
+
+                // Unmask the SIM800L Broadcast System Notification Dashboard Box
+                document.getElementById('criticalSmsAlert').classList.remove('hidden');
+
+                if (runtimeTicks === 11) {
+                    addGlobalLog("CRITICAL: Gas thresholds completely broken (>650 PPM). Air samples compromised!", "text-red-500 font-black");
+                    addGlobalLog("SIM800L GSM Core triggered: Broadcasting automated network SOS data packages to rescue departments.", "text-yellow-400 font-bold");
+                }
+            }
+
+            // Safe loop limit bounds evaluation
+            if (runtimeTicks > 18) runtimeTicks = 0;
+
+            // Render Dynamic values securely down to respective layout element targets
+            document.getElementById('ovGas').innerText = liveGasValue;
+            document.getElementById('ovTemp').innerText = liveTempValue;
+            document.getElementById('ovHum').innerText = liveHumidityValue;
+            document.getElementById('ovGasProgress').style.width = `${(liveGasValue/1000)*100}%`;
+            document.getElementById('ovGasProgress').className = liveGasValue > 600 ? "bg-red-500 h-full transition-all duration-300" : "bg-emerald-500 h-full transition-all duration-300";
+
+            // Slide 03 Values Updaters
+            document.getElementById('deepGasText').innerText = liveGasValue;
+            document.getElementById('deepTempText').innerText = `${liveTempValue}°C`;
+            document.getElementById('deepHumText').innerText = `${liveHumidityValue}%`;
+
+            // Battery Analytics Layout Tab Elements Populator
+            document.getElementById('headerBatteryText').innerText = `${liveBatteryPercent}%`;
+            document.getElementById('headerVoltage').innerText = liveVoltage;
+            document.getElementById('headerCurrent').innerText = liveCurrent;
+
+            document.getElementById('pwrPercent').innerText = `${liveBatteryPercent}%`;
+            document.getElementById('pwrVoltage').innerText = liveVoltage;
+            document.getElementById('pwrCurrent').innerText = liveCurrent;
+            document.getElementById('pwrWattage').innerText = `${Math.abs(Math.round(liveVoltage * liveCurrent))} mW`;
+            document.getElementById('pwrTimeEmpty').innerText = liveGasValue > 600 ? "14 Hrs 02 Min (ALARM LOAD ACTIVE)" : "38 Hrs 14 Min";
+
+            // Mirror Dynamic Text Processing directly inside Hardware 16x2 LCD Simulation Glass
+            const mirrorLine1 = document.getElementById('lcd-l1');
+            const mirrorLine2 = document.getElementById('lcd-l2');
+            if (liveGasValue > 600) {
+                mirrorLine1.innerText = "🚨 DISASTER SPIKE";
+                mirrorLine2.innerText = `EVACUATE AREA NOW`;
+            } else if (runtimeTicks >= 4 && runtimeTicks <= 8) {
+                mirrorLine1.innerText = "⚠️ WILDLIFE ANOMALY";
+                mirrorLine2.innerText = "ZONE 03 BREACHED";
+            } else {
+                mirrorLine1.innerText = "SYS: MESH ALL OK";
+                mirrorLine2.innerText = `G:${liveGasValue}PPM T:${Math.round(liveTempValue)}C`;
+            }
+
+            // Inject fresh rolling vector telemetry coordinates down to Chart elements instances
+            deepTelemetryChart.data.datasets[0].data.shift();
+            deepTelemetryChart.data.datasets[0].data.push(liveGasValue);
+
+            deepTelemetryChart.data.datasets[1].data.shift();
+            deepTelemetryChart.data.datasets[1].data.push(liveTempValue);
+
+            deepTelemetryChart.update('none'); // Silent frame rendering compression pass optimization
+
+        }, 2500);
+    </script>
+</body>
+</html>
