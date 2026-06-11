@@ -1,0 +1,82 @@
+import time
+import random
+
+# Global Configurations for Thresholds
+GAS_SAFE_LIMIT = 200      # Parts per million (PPM)
+TEMP_SAFE_LIMIT = 45.0    # Celsius
+
+class IntelligentEdgeSystem:
+    def __init__(self):
+        print("⚡ Tactical Edge System Initialized...")
+        print("🛰️ Monitoring Rural Node Sensors...\n")
+
+    def fetch_sensor_readings(self):
+        """
+        Simulating real-time data streaming from edge hardware pins (e.g., ESP32)
+        """
+        return {
+            "gas_ppm": random.randint(100, 450),      # Simulating gas sensor readings
+            "temperature_c": random.uniform(25, 55), # Simulating ambient temperature
+            "flame_detected": random.choice([0, 0, 0, 1]) # 1 = Flame trigger, 0 = Normal
+        }
+
+    def predictive_ai_model(self, data):
+        """
+        A predictive logic layer simulating a lightweight machine learning model 
+        running at the edge to analyze multi-variable risk metrics.
+        """
+        # If both temperature and gas are rising rapidly together, risk multiplies
+        if data["gas_ppm"] > 180 and data["temperature_c"] > 40.0:
+            return "HIGH_RISK_PREDICTION"
+        return "STABLE"
+
+    def execute_hardware_remedies(self, state, data):
+        """
+        The Automated Countermeasures Engine (Physical Remedies)
+        """
+        if state == "GAS_CRITICAL":
+            print("\n[🚨 REMEDY ACTIVATED: BOX 1 - GAS LEAK]")
+            print(" -> Hardware Execution: Sending HIGH pulse to Relay Pin 4 (Exhaust Fan ON)")
+            print(" -> System Action: Isolating primary electrical grid contactors.")
+            print(f" -> Telemetry Log: Gas level at {data['gas_ppm']} PPM.")
+            
+        elif state == "FIRE_CRITICAL":
+            print("\n[🔥 REMEDY ACTIVATED: BOX 2 - FIRE OUTBREAK]")
+            print(" -> Hardware Execution: Activating Relay Pin 7 (Water Sprinkler Solenoid Valve)")
+            print(" -> System Action: Sounding 100dB Piezo Buzzer for neighborhood evacuation.")
+            
+        elif state == "AI_PREDICTIVE_WARNING":
+            print("\n[⚠️ PREVENTATIVE REMEDY ACTIVATED: ANOMALY DETECTED]")
+            print(" -> AI Prediction: Environmental patterns indicate high probability of accident.")
+            print(" -> System Action: Activating low-power warning lights and flashing dashboard alerts.")
+
+    def run_monitor_loop(self):
+        try:
+            while True:
+                # 1. Gather raw data
+                metrics = self.fetch_sensor_readings()
+                print(f"📊 Current Telemetry -> Gas: {metrics['gas_ppm']} PPM | Temp: {metrics['temperature_c']:.1f}°C | Flame Pin: {metrics['flame_detected']}")
+                
+                # 2. Run predictive AI analysis
+                ai_prediction = self.predictive_ai_model(metrics)
+
+                # 3. Decision Matrix for explicit triggers and preventative steps
+                if metrics["flame_detected"] == 1:
+                    self.execute_hardware_remedies("FIRE_CRITICAL", metrics)
+                elif metrics["gas_ppm"] > GAS_SAFE_LIMIT:
+                    self.execute_hardware_remedies("GAS_CRITICAL", metrics)
+                elif ai_prediction == "HIGH_RISK_PREDICTION":
+                    self.execute_hardware_remedies("AI_PREDICTIVE_WARNING", metrics)
+                else:
+                    print("✅ Edge Status: Normal. No anomalies found.")
+
+                print("-" * 60)
+                time.sleep(3) # Samples metrics every 3 seconds
+
+        except KeyboardInterrupt:
+            print("\n⏹️ Monitoring suspended by operator.")
+
+# Execute the software structure
+if __name__ == "__main__":
+    edge_node = IntelligentEdgeSystem()
+    edge_node.run_monitor_loop()
